@@ -8,11 +8,12 @@ package com.itactic.jdbc.jdbc.autocreate;
 import com.itactic.jdbc.exception.SqlBuilderException;
 import com.itactic.jdbc.jdbc.*;
 import com.itactic.jdbc.jdbc.autocreate.annotation.AutoColumn;
+import com.itactic.jdbc.jdbc.autocreate.config.AutoCreateTableConfig;
+import com.itactic.jdbc.jdbc.autocreate.config.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.lang.reflect.Field;
 
 /**
@@ -37,16 +38,28 @@ public final class SearchPO {
 
     private void startCreate() {
         if (canCreate) {
-            StringBuffer sqlSB = new StringBuffer("create table `");
-            sqlSB.append(getTableName(cls) + "` ( ");
             switch (dbType) {
                 case MYSQL:
+                    StringBuffer sqlSB = new StringBuffer("create table `");
+                    String tableName = getTableName(cls);
+                    int tableNum = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE table_name =?",new Object[]{tableName},Integer.class);
+                    if (Constants.AutoCreate.DELETEANDCREATE.equals(AutoCreateTableConfig.getTableBuildStrategy()) && tableNum > 0) {
+                        /** 删除并创建 */
+                        jdbcTemplate.execute("drop table `" + tableName + "`;");
+                    } else if (Constants.AutoCreate.NODROP.equals(AutoCreateTableConfig.getTableBuildStrategy())) {
+                        /** 存在不创建 */
+                        if (tableNum > 0) {
+                            logger.info("Table:[{}] Already Exists",tableName);
+                            return;
+                        }
+                    }
+                    sqlSB.append(tableName + "` ( ");
                     sqlSB.append(createMySqlTableBody());
                     sqlSB.append(" ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+                    logger.info("AutoCreateTableSql:[{}]", sqlSB.toString());
+                    jdbcTemplate.execute(sqlSB.toString());
                 break;
             }
-            logger.info("----AutoCreateTableSql:[{}]----", sqlSB.toString());
-            jdbcTemplate.execute(sqlSB.toString());
         }
     }
 
