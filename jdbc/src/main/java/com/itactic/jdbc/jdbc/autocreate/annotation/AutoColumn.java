@@ -11,13 +11,10 @@ import java.lang.annotation.*;
 public @interface AutoColumn {
 
     /** 字段名称 */
-    String fieldName();
+    String fieldName() default "";
 
-    /** 字段类型 */
-    String filedType() default "undefine";
-
-    /** 字段属性长度 */
-    int fieldLength() default 255;
+    /** 字段类型+长度 */
+    String filedType();
 
     boolean fieldNullAble() default true;
 

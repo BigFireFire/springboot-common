@@ -5,87 +5,108 @@ package com.itactic.jdbc.jdbc.autocreate;
  * @date 2020/4/24 22:11
  */
 
-import com.itactic.jdbc.constants.CommonConstants;
 import com.itactic.jdbc.exception.SqlBuilderException;
 import com.itactic.jdbc.jdbc.*;
 import com.itactic.jdbc.jdbc.autocreate.annotation.AutoColumn;
-import com.itactic.jdbc.jdbc.autocreate.enums.MySqlFieldType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * 自动建表core
  * */
-public class SearchPO {
+public final class SearchPO {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private Class<?> cls = null;
-
-    /** 数据库字段名 */
-    private List<String> fieldNameList = null;
-    /** 字段长度 */
-    private List<Integer> fieldLengthList = null;
-    /** 字段能否为空 */
-    private List<Boolean> fieldNullAbleList = null;
-    /** 字段java类型 */
-    private List<Class> fieldTypeList = null;
-    /** 字段数据库类型 */
-    private List<String> fieldDataBaseTypeList = null;
-    /** 字段注释 */
-    private List<String> fieldCommentList = null;
-
-    private Set<Class> needLengthCls = new HashSet<>();
-    private String primaryKeyField = null;
     private DbType dbType = null;
-    private String dataSource;
     private boolean canCreate = true;
-    private static boolean created = false;
-    private Integer filedSize = 0;
-    private SearchPO(Class<?> cls) {
+
+    private JdbcTemplate jdbcTemplate;
+
+    private SearchPO(Class<?> cls,JdbcTemplate jdbcTemplate) {
         this.cls = cls;
+        this.jdbcTemplate = jdbcTemplate;
         init();
         startCreate();
     }
 
+
     private void startCreate() {
-        if (!canCreate) {
-            /** 无法建表 */
-        } else {
-            StringBuffer sqlSB = new StringBuffer("create table ");
-            sqlSB.append(getTableName(cls) + " ( ");
+        if (canCreate) {
+            StringBuffer sqlSB = new StringBuffer("create table `");
+            sqlSB.append(getTableName(cls) + "` ( ");
             switch (dbType) {
                 case MYSQL:
                     sqlSB.append(createMySqlTableBody());
-                    sqlSB.append(" ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                    sqlSB.append(" ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
                 break;
             }
+            logger.info("----AutoCreateTableSql:[{}]----", sqlSB.toString());
+            jdbcTemplate.execute(sqlSB.toString());
         }
     }
 
     private String createMySqlTableBody() {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < filedSize; i++) {
-            sb.append(fieldNameList.get(i)).append(" ");
-            if ("undefine".equals(fieldDataBaseTypeList.get(i))) {
-                sb.append(MySqlFieldType.getDataBaseTypeByObject(fieldTypeList.get(i)));
-            } else {
-                sb.append(fieldDataBaseTypeList.get(i));
+        Field[] fields = cls.getDeclaredFields();
+        boolean havePrimaryKey = false;
+        for (Field field: fields) {
+            if ("serialVersionUID".equals(field.getName())) {
+                continue;
             }
+            Transient trans = field.getAnnotation(Transient.class);
+            if (null != trans){
+                if (trans.isTransient()) {
+                    continue;
+                }
+            }
+            AutoColumn autoColumn = field.getAnnotation(AutoColumn.class);
+            if (null == autoColumn) {
+                continue;
+            }
+            StringBuffer fieldSql = new StringBuffer();
+            fieldSql.append(" `");
+            String fieldSqlName;
+            if (StringUtils.isBlank(autoColumn.fieldName())) {
+                fieldSqlName = getTableFieldNameByClsFieldName(field.getName());
+
+            } else {
+                fieldSqlName = field.getName();
+            }
+            fieldSql.append(fieldSqlName).append("` ").append(autoColumn.filedType()).append(" ");
+
+            if (autoColumn.fieldNullAble()) {
+                fieldSql.append("DEFAULT NULL ");
+            } else {
+                fieldSql.append("NOT NULL ");
+            }
+
+            if (StringUtils.isNotBlank(autoColumn.fieldComment())) {
+                fieldSql.append("COMMENT '").append(autoColumn.fieldComment()).append("',");
+            } else {
+                fieldSql.append(",");
+            }
+            Id id = field.getAnnotation(Id.class);
+            if (null != id && !havePrimaryKey) {
+                fieldSql.append(" PRIMARY KEY (`").append(fieldSqlName).append("`),");
+                havePrimaryKey = true;
+            }
+            sb.append(fieldSql);
         }
+        sb.deleteCharAt(sb.lastIndexOf(","));
         return sb.toString();
     }
 
-    public static boolean CreateTable(Class<?> cls) {
-        new SearchPO(cls);
-        return created;
+    /** 入口 */
+    public static void CreateTable(Class<?> cls,JdbcTemplate jdbcTemplate) {
+        if (null == jdbcTemplate) {
+            return;
+        }
+        new SearchPO(cls,jdbcTemplate);
     }
 
     private void init() {
@@ -98,48 +119,8 @@ public class SearchPO {
         DataSourceType dataSourceType = cls.getAnnotation(DataSourceType.class);
         if (null == dataSourceType) {
             setDbType(DbType.MYSQL);
-            setDataSource(CommonConstants.DATASOURCE_TYPE.DEFAULT);
         } else {
             setDbType(dataSourceType.type());
-            setDataSource(dataSourceType.value());
-        }
-        fieldNameList = new LinkedList<>();
-        fieldTypeList = new LinkedList<>();
-        fieldLengthList = new LinkedList<>();
-        fieldNullAbleList = new LinkedList<>();
-        fieldDataBaseTypeList = new LinkedList<>();
-        Field[] fields = cls.getDeclaredFields();
-        for (Field field: fields) {
-            AutoColumn autoColumn = field.getAnnotation(AutoColumn.class);
-            if (null == autoColumn) {
-                continue;
-            }
-            if ("serialVersionUID".equals(field.getName())) {
-                continue;
-            }
-            Transient trans = field.getAnnotation(Transient.class);
-            if (null == trans || trans.isTransient()){
-                continue;
-            }
-            Id id = field.getAnnotation(Id.class);
-            if (null == id && StringUtils.isBlank(primaryKeyField)) {
-                primaryKeyField = field.getName();
-            }
-            String fieldName = autoColumn.fieldName();
-            Integer fieldLength = autoColumn.fieldLength();
-            boolean fieldNullAble = autoColumn.fieldNullAble();
-            if (StringUtils.isBlank(fieldName)) {
-                fieldName = getTableFieldNameByClsFieldName(field.getName());
-            }
-
-            this.fieldNullAbleList.add(fieldNullAble);
-            this.fieldLengthList.add(fieldLength);
-            this.fieldNameList.add(fieldName);
-            this.fieldTypeList.add(field.getType().getClass());
-            this.fieldDataBaseTypeList.add(autoColumn.filedType());
-            this.fieldCommentList.add(autoColumn.fieldComment());
-
-            filedSize++;
         }
     }
 
@@ -170,11 +151,4 @@ public class SearchPO {
         this.dbType = dbType;
     }
 
-    public void setDataSource(String dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public static void main(String[] args) {
-
-    }
 }

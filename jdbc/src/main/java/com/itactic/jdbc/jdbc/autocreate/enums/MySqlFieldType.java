@@ -1,9 +1,6 @@
-package com.itactic.jdbc.jdbc.autocreate.enums;
+/**package com.itactic.jdbc.jdbc.autocreate.enums;
 
-/**
- * @author 1Zx.
- * @date 2020/4/25 11:10
- */
+
 public enum MySqlFieldType {
 
      Integer(java.lang.Integer.class,"int"),
@@ -30,3 +27,4 @@ public enum MySqlFieldType {
           return "varchar";
      }
 }
+*/
