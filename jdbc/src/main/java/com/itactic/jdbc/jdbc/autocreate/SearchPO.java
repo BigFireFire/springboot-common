@@ -13,24 +13,37 @@ import com.itactic.jdbc.utils.ScanSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.lang.reflect.Field;
 import java.util.Set;
 
 /**
  * 自动建表core
  * */
-public class SearchPO {
+@Transactional
+@Component
+public class SearchPO implements ApplicationContextAware {
 
     private static Logger logger = LoggerFactory.getLogger(SearchPO.class);
     private Class<?> cls = null;
     private DbType dbType = null;
     private boolean canCreate = true;
-    private ConfigurableApplicationContext context;
     public static JdbcTemplate jdbcTemplate;
 
+    public SearchPO() {
+    }
+
     private SearchPO(Class<?> cls) {
+        if (null == jdbcTemplate) {
+            logger.error("----jdbcTemplate初始化失败，自动建表失败----");
+            return;
+        }
         this.cls = cls;
         init();
         startCreate();
@@ -116,12 +129,7 @@ public class SearchPO {
     }
 
     /** 入口 */
-    public static void CreateTable(String path,ConfigurableApplicationContext context) {
-        if (null == context) {
-            logger.error("----context error----");
-            return;
-        }
-        jdbcTemplate = context.getBeanFactory().getBean(JdbcTemplate.class);
+    public static void CreateTable(String path) {
         Set<Class<?>> classSet = ScanSupport.getClass(path);
         classSet.forEach(cls ->{
             Table table = cls.getAnnotation(Table.class);
@@ -173,4 +181,8 @@ public class SearchPO {
         this.dbType = dbType;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.jdbcTemplate = applicationContext.getBean(JdbcTemplate.class);
+    }
 }
