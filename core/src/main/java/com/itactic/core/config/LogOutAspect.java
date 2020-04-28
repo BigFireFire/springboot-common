@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.itactic.core.annotation.LogLevel;
 import com.itactic.core.annotation.LogOut;
 import com.itactic.core.model.AjaxResult;
+import com.itactic.core.vo.CustomRequest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,7 +18,11 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Optional;
@@ -111,13 +116,26 @@ public final class LogOutAspect {
                 .getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         JSONObject paramsJO = new JSONObject();
-        for (Enumeration<String> enumeration = request.getParameterNames(); enumeration.hasMoreElements();) {
-            String key = enumeration.nextElement();
-            paramsJO.put(key, request.getParameter(key));
-        }
         Class cls = joinPoint.getTarget().getClass();
         logger = LoggerFactory.getLogger(cls);
-
+        switch (request.getMethod()) {
+            case "GET":
+                for (Enumeration<String> enumeration = request.getParameterNames(); enumeration.hasMoreElements();) {
+                    String key = enumeration.nextElement();
+                    paramsJO.put(key, request.getParameter(key));
+                }
+            break;
+            default:
+                if ("application/json".equals(request.getContentType())) {
+                    Object[] objects = joinPoint.getArgs();
+                    for (Object object : objects) {
+                        if (object instanceof CustomRequest) {
+                            paramsJO = JSON.parseObject(JSON.toJSONString(object));
+                        }
+                    }
+                }
+                break;
+        }
         if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
             logger.info(paramsLog,cls.getSimpleName()
                     ,joinPoint.getSignature().getName()
