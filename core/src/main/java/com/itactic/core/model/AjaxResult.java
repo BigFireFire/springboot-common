@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class AjaxResult<T> {
 
+
 	@ApiModelProperty("状态(0成功1错误2未登陆3刷新4重复提交)")
 	private Integer status;
 	@ApiModelProperty("错误信息")
