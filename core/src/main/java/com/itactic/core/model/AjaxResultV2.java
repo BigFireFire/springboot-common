@@ -20,16 +20,16 @@ public class AjaxResultV2 {
 	}
 
 
-	public static AjaxResult success(String msg){
-		return new AjaxResult(0, msg);
+	public static AjaxResultV2 success(String msg){
+		return new AjaxResultV2(0, msg);
 	}
 	
-	public static AjaxResult success(String msg, Object data){
-		return new AjaxResult(0, msg, data);
+	public static AjaxResultV2 success(String msg, Object data){
+		return new AjaxResultV2(0, msg, data);
 	}
 	
-	public static AjaxResult error(String msg){
-		return new AjaxResult(-1, msg);
+	public static AjaxResultV2 error(String msg){
+		return new AjaxResultV2(-1, msg);
 	}
 
 	public int getCode() {
