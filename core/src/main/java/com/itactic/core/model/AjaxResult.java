@@ -15,8 +15,6 @@ public class AjaxResult<T> {
 	private String msg = "操作成功";
 	@ApiModelProperty("数据对象")
 	private T data;
-	@ApiModelProperty("数量")
-	private Integer count;
 	@ApiModelProperty(hidden = true)
 	@JsonIgnore
 	private transient Boolean ok;
@@ -44,21 +42,12 @@ public class AjaxResult<T> {
 		this.data = data;
 	}
 
-	public AjaxResult(Integer status, String msg, T data, Integer count) {
-		this.status = status;
-		this.msg = msg;
-		this.data = data;
-		this.count = count;
-	}
-
 	public static AjaxResult<String> ok() {
 		return new AjaxResult<String>(BootConstants.AJAX_STATUS.success);
 	}
 
-	public static <E> AjaxResult<E> ok(E E) {
-		AjaxResult<E> ajaxResult = new AjaxResult<E>(E);
-		ajaxResult.setStatus(BootConstants.AJAX_STATUS.success);
-		return ajaxResult;
+	public static AjaxResult<String> ok(String msg) {
+		return new AjaxResult<String>(BootConstants.AJAX_STATUS.success,"操作成功");
 	}
 
 	public static <E> AjaxResult<E> ok(String msg, E data) {
@@ -69,20 +58,10 @@ public class AjaxResult<T> {
 		return ajaxResult;
 	}
 
-	public static <E> AjaxResult<E> ok(String msg,Integer count,E data) {
+	public static <E> AjaxResult<E> ok(E data) {
 		AjaxResult<E> ajaxResult = new AjaxResult<>();
-		ajaxResult.setMsg(msg);
+		ajaxResult.setMsg("操作成功");
 		ajaxResult.setData(data);
-		ajaxResult.setCount(count);
-		ajaxResult.setStatus(BootConstants.AJAX_STATUS.success);
-		return ajaxResult;
-	}
-
-	public static <E> AjaxResult<E> ok(Integer count,E data) {
-		AjaxResult<E> ajaxResult = new AjaxResult<>();
-		ajaxResult.setMsg("查询成功");
-		ajaxResult.setData(data);
-		ajaxResult.setCount(count);
 		ajaxResult.setStatus(BootConstants.AJAX_STATUS.success);
 		return ajaxResult;
 	}
@@ -139,14 +118,6 @@ public class AjaxResult<T> {
 
 	public void setOk(boolean ok) {
 		this.ok = ok;
-	}
-
-	public Integer getCount() {
-		return count;
-	}
-
-	public void setCount(Integer count) {
-		this.count = count;
 	}
 
 	public boolean isOk() {
