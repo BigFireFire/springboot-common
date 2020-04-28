@@ -55,5 +55,9 @@
             <artifactId>fastjson</artifactId>
             <version>${com.alibaba.fastjson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
     </dependencies>
 </project>
