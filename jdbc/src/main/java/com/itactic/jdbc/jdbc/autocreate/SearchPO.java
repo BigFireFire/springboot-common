@@ -4,37 +4,37 @@ package com.itactic.jdbc.jdbc.autocreate;
  * @author 1Zx.
  * @date 2020/4/24 22:11
  */
-
 import com.itactic.jdbc.exception.SqlBuilderException;
 import com.itactic.jdbc.jdbc.*;
 import com.itactic.jdbc.jdbc.autocreate.annotation.AutoColumn;
 import com.itactic.jdbc.jdbc.autocreate.config.AutoCreateTableConfig;
 import com.itactic.jdbc.jdbc.autocreate.config.Constants;
+import com.itactic.jdbc.utils.ScanSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.lang.reflect.Field;
+import java.util.Set;
 
 /**
  * 自动建表core
  * */
-public final class SearchPO {
+public class SearchPO {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(SearchPO.class);
     private Class<?> cls = null;
     private DbType dbType = null;
     private boolean canCreate = true;
+    private ConfigurableApplicationContext context;
+    public static JdbcTemplate jdbcTemplate;
 
-    private JdbcTemplate jdbcTemplate;
-
-    private SearchPO(Class<?> cls,JdbcTemplate jdbcTemplate) {
+    private SearchPO(Class<?> cls) {
         this.cls = cls;
-        this.jdbcTemplate = jdbcTemplate;
         init();
         startCreate();
     }
-
 
     private void startCreate() {
         if (canCreate) {
@@ -46,6 +46,7 @@ public final class SearchPO {
                     if (Constants.AutoCreate.DELETEANDCREATE.equals(AutoCreateTableConfig.getTableBuildStrategy()) && tableNum > 0) {
                         /** 删除并创建 */
                         jdbcTemplate.execute("drop table `" + tableName + "`;");
+                        logger.info("----删除表：[{}]成功----",tableName);
                     } else if (Constants.AutoCreate.NODROP.equals(AutoCreateTableConfig.getTableBuildStrategy())) {
                         /** 存在不创建 */
                         if (tableNum > 0) {
@@ -115,11 +116,19 @@ public final class SearchPO {
     }
 
     /** 入口 */
-    public static void CreateTable(Class<?> cls,JdbcTemplate jdbcTemplate) {
-        if (null == jdbcTemplate) {
+    public static void CreateTable(String path,ConfigurableApplicationContext context) {
+        if (null == context) {
+            logger.error("----context error----");
             return;
         }
-        new SearchPO(cls,jdbcTemplate);
+        jdbcTemplate = context.getBeanFactory().getBean(JdbcTemplate.class);
+        Set<Class<?>> classSet = ScanSupport.getClass(path);
+        classSet.forEach(cls ->{
+            Table table = cls.getAnnotation(Table.class);
+            if (null != table) {
+                new SearchPO(cls);
+            }
+        });
     }
 
     private void init() {
