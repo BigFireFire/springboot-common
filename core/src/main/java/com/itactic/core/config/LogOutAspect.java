@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.itactic.core.annotation.LogLevel;
 import com.itactic.core.annotation.LogOut;
 import com.itactic.core.model.AjaxResult;
+import com.itactic.core.model.AjaxResultV2;
 import com.itactic.core.vo.CustomRequest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -92,7 +93,7 @@ public final class LogOutAspect {
         Class cls = joinPoint.getTarget().getClass();
         logger = LoggerFactory.getLogger(cls);
         Optional<Object> optional = Optional.ofNullable(result);
-        if (optional.isPresent() && (result instanceof AjaxResult || "AjaxResult".equals(result.getClass().getSimpleName()))) {
+        if (optional.isPresent() && (result instanceof AjaxResult || "AjaxResult".equals(result.getClass().getSimpleName()) || result instanceof AjaxResultV2)) {
             if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
                 logger.info(resultLog,cls.getSimpleName()
                         ,joinPoint.getSignature().getName()
