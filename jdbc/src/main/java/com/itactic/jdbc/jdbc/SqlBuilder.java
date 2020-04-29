@@ -38,6 +38,8 @@ public class SqlBuilder {
 
 	private DbType dbType;
 
+	private String dynamic;
+
 	protected Map<String, String> columnMapping = new HashMap<String, String>();
 	protected Map<String, String> propertyMapping = new HashMap<String, String>();
 
@@ -76,6 +78,14 @@ public class SqlBuilder {
 
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
+	}
+
+	public String getDynamic() {
+		return dynamic;
+	}
+
+	public void setDynamic(String dynamic) {
+		this.dynamic = dynamic;
 	}
 
 	private SqlBuilder(Class<?> cls) {
@@ -358,6 +368,9 @@ public class SqlBuilder {
 		Table table = cls.getAnnotation(Table.class);
 		if (table == null || table.value() == "") {
 			throw new SqlBuilderException("没有table注解或者配置为空!");
+		}
+		if (StringUtils.isNotBlank(this.dynamic)) {
+			return table.value().replace(CommonConstants.DYNAMIC,this.dynamic);
 		}
 		return table.value();
 	}

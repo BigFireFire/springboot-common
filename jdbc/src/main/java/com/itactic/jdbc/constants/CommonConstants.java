@@ -24,5 +24,10 @@ public class CommonConstants {
 		 */
 		public static final String DEFAULT = "default";
 	}
+
+	/**
+	 * 动态表明
+	 * */
+	public static final String DYNAMIC = "${dynamic}";
 	
 }
