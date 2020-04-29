@@ -33,7 +33,7 @@ public class AjaxResultV2 {
 	}
 	
 	public static AjaxResultV2 error(String msg){
-		return new AjaxResultV2(-1, msg);
+		return new AjaxResultV2(1, msg);
 	}
 
 	public int getCode() {
