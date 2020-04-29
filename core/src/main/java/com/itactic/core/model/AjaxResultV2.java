@@ -27,6 +27,10 @@ public class AjaxResultV2 {
 	public static AjaxResultV2 success(String msg, Object data){
 		return new AjaxResultV2(0, msg, data);
 	}
+
+	public static AjaxResultV2 success(Object data) {
+		return new AjaxResultV2(0,"操作成功",data);
+	}
 	
 	public static AjaxResultV2 error(String msg){
 		return new AjaxResultV2(-1, msg);
