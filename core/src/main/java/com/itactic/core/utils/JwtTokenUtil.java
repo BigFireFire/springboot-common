@@ -45,6 +45,18 @@ public class JwtTokenUtil {
 	}
 
 	/**
+	 * @param id
+	 * @param username
+	 * @param expiration token过期时长，单位秒
+	 * @return token
+	 * */
+	public static String createToken(String id,String username,long expiration) {
+		return Jwts.builder().signWith(SignatureAlgorithm.HS512,SECRET)
+				.setIssuer(ISS).setId(id).setSubject(username).setIssuedAt(new Date())
+				.setExpiration(new Date((System.currentTimeMillis() + expiration * 1000))).compact();
+	}
+
+	/**
 	 * 从token中获取用户名
 	 * 
 	 * @param token
@@ -136,5 +148,4 @@ public class JwtTokenUtil {
 			return null;
 		}
 	}
-
 }
