@@ -17,7 +17,7 @@ public class ExceptionConfig {
             BootCustomException bootCustomException = (BootCustomException) e;
             return AjaxResult.error(bootCustomException.getMessage());
         } else {
-            logger.error("【系统异常】{}", e);
+            logger.error("【系统异常】{}", e.getMessage());
             return AjaxResult.error(e.getMessage());
         }
     }
