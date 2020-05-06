@@ -4,6 +4,7 @@ import com.itactic.core.annotation.NoLogin;
 import com.itactic.core.constants.BootConstants;
 import com.itactic.core.model.AjaxResult;
 import com.itactic.core.utils.WebContextUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,10 +66,19 @@ public class LoginInterceptor implements HandlerInterceptor {
 		if (need) {
 			return true;
 		}
-		Object user = webContextUtils.getSessionUser();
-		if (user != null) {
-			return true;
+
+		if ("jwt".equals(useLoginType)) {
+			String token = request.getHeader("token");
+			if (StringUtils.isNotBlank(token)) {
+				return true;
+			}
+		} else if ("session".equals(useLoginType)) {
+			Object user = webContextUtils.getSessionUser();
+			if (user != null) {
+				return true;
+			}
 		}
+
 		String requestType = request.getHeader("X-Requested-With");
 		if ("XMLHttpRequest".equals(requestType)) {
 			WebContextUtils.responseOutWithJson(response, AjaxResult.noLogin());
