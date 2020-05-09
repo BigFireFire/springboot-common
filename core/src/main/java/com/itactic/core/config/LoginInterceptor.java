@@ -3,6 +3,7 @@ package com.itactic.core.config;
 import com.itactic.core.annotation.NoLogin;
 import com.itactic.core.constants.BootConstants;
 import com.itactic.core.model.AjaxResult;
+import com.itactic.core.utils.JwtTokenUtil;
 import com.itactic.core.utils.WebContextUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -73,6 +74,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 		if ("jwt".equals(useLoginType)) {
 			String token = request.getHeader(httpTokenKey);
 			if (StringUtils.isNotBlank(token)) {
+				if (null == JwtTokenUtil.getTokenBody(token)) {
+					return false;
+				}
 				return true;
 			}
 		} else if ("session".equals(useLoginType)) {
