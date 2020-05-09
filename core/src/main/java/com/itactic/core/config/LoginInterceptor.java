@@ -30,6 +30,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 	@Value("${login.use:session}")
 	private String useLoginType;
 
+	@Value("${http.token.key:token}")
+	private String httpTokenKey;
+
 	@Resource
 	private WebContextUtils webContextUtils;
 
@@ -68,7 +71,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 		}
 
 		if ("jwt".equals(useLoginType)) {
-			String token = request.getHeader("token");
+			String token = request.getHeader(httpTokenKey);
 			if (StringUtils.isNotBlank(token)) {
 				return true;
 			}
