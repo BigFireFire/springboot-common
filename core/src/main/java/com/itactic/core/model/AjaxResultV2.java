@@ -20,8 +20,11 @@ public class AjaxResultV2 {
 		this.data = data;
 	}
 
+    public static AjaxResultV2 success(int status,String msg, Object data){
+	    return new AjaxResultV2(status, msg, data);
+    }
 
-	public static AjaxResultV2 success(String msg){
+    public static AjaxResultV2 success(String msg){
 		return new AjaxResultV2(BootConstants.AJAX_STATUS.success, msg);
 	}
 	
