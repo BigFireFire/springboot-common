@@ -1,47 +1,48 @@
 package com.itactic.core.model;
 
 import com.alibaba.fastjson.JSONObject;
+import com.itactic.core.constants.BootConstants;
 
 public class AjaxResultV2 {
 
-	private int code;
+	private int status;
 	private String msg;
 	private Object data;
 
-	private AjaxResultV2(int code, String msg){
-		this.code = code;
+	private AjaxResultV2(int status, String msg){
+		this.status = status;
 		this.msg = msg;
 	}
 
-	private AjaxResultV2(int code, String msg, Object data){
-		this.code = code;
+	private AjaxResultV2(int status, String msg, Object data){
+		this.status = status;
 		this.msg = msg;
 		this.data = data;
 	}
 
 
 	public static AjaxResultV2 success(String msg){
-		return new AjaxResultV2(0, msg);
+		return new AjaxResultV2(BootConstants.AJAX_STATUS.success, msg);
 	}
 	
 	public static AjaxResultV2 success(String msg, Object data){
-		return new AjaxResultV2(0, msg, data);
+		return new AjaxResultV2(BootConstants.AJAX_STATUS.success, msg, data);
 	}
 
 	public static AjaxResultV2 success(Object data) {
-		return new AjaxResultV2(0,"操作成功",data);
+		return new AjaxResultV2(BootConstants.AJAX_STATUS.success,"操作成功",data);
 	}
 	
 	public static AjaxResultV2 error(String msg){
-		return new AjaxResultV2(1, msg);
+		return new AjaxResultV2(BootConstants.AJAX_STATUS.error, msg);
 	}
 
-	public int getCode() {
-		return code;
+	public int getStatus() {
+		return status;
 	}
 
-	public void setCode(int code) {
-		this.code = code;
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 	public String getMsg() {
