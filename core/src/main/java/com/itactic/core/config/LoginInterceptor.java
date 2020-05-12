@@ -74,10 +74,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 		if ("jwt".equals(useLoginType)) {
 			String token = request.getHeader(httpTokenKey);
 			if (StringUtils.isNotBlank(token)) {
-				if (null == JwtTokenUtil.getTokenBody(token)) {
-					return false;
+				if (null != JwtTokenUtil.getTokenBody(token)) {
+					return true;
 				}
-				return true;
 			}
 		} else if ("session".equals(useLoginType)) {
 			Object user = webContextUtils.getSessionUser();

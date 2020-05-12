@@ -17,7 +17,7 @@ public class AutoCreateTableConfig {
         return tableBuildStrategy;
     }
 
-    @Value("${auto.strategy:'ND'}")
+    @Value("${auto.strategy:ND}")
     public void setTableBuildStrategy(String tableBuildStrategy) {
         AutoCreateTableConfig.tableBuildStrategy = tableBuildStrategy;
     }
