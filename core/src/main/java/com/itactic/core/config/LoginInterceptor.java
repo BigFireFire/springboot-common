@@ -34,6 +34,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 	@Value("${http.token.key:token}")
 	private String httpTokenKey;
 
+	@Value("${login.auto.redirect:true}")
+	private boolean autoRedirect;
+
 	@Resource
 	private WebContextUtils webContextUtils;
 
@@ -90,7 +93,11 @@ public class LoginInterceptor implements HandlerInterceptor {
 			WebContextUtils.responseOutWithJson(response, AjaxResult.noLogin());
 			return false;
 		} else {
-			response.sendRedirect(request.getContextPath() + loginUri);
+			if (autoRedirect) {
+				response.sendRedirect(request.getContextPath() + loginUri);
+			} else {
+				WebContextUtils.responseOutWithJson(response, AjaxResult.noLogin());
+			}
 			return false;
 		}
 	}
