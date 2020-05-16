@@ -4,6 +4,7 @@ import com.itactic.core.exception.BootCustomException;
 import com.itactic.core.model.AjaxResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,6 +24,9 @@ public class ExceptionConfig {
         } else if (e instanceof NoHandlerFoundException) {
             logger.error("【系统异常】:{}", e.getMessage());
             return AjaxResult.error("接口不存在");
+        } else if (e instanceof MissingServletRequestParameterException) {
+            logger.error("【系统异常】:{}", e.getMessage());
+            return AjaxResult.error("缺少必填参数");
         } else  {
             logger.error("【系统异常】:{}", e.getMessage());
             return AjaxResult.error("系统错误");
