@@ -12,13 +12,16 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,17 +51,17 @@ public final class LogOutAspect {
     private final String paramsLog = ">>>>【{}】类的【{}】接口调用参数：【{}】,调用时间：【{}】<<<<";
 
 
-    @Pointcut(value = "bean(*Controller)")
+    @Pointcut(value = "within(com..*.controller..*)")
     public void LogOut(){
 
     }
 
-    @Pointcut(value = "within(com..*.controller.*)")
+    @Pointcut(value = "bean(*Controller)")
     public void LogOutCls(){
 
     }
 
-    @Before("LogOutCls() && @within(logOut)")
+    @Before("LogOutCls() &&  @within(logOut)")
     public void clsBefore(JoinPoint joinPoint, LogOut logOut) {
         beforeAspect(joinPoint,logOut);
     }
@@ -113,29 +116,25 @@ public final class LogOutAspect {
     }
 
     private void beforeAspect(JoinPoint joinPoint, LogOut logOut) {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-                .getRequestAttributes();
-        HttpServletRequest request = attributes.getRequest();
         JSONObject paramsJO = new JSONObject();
         Class cls = joinPoint.getTarget().getClass();
         logger = LoggerFactory.getLogger(cls);
-        switch (request.getMethod()) {
-            case "GET":
-                for (Enumeration<String> enumeration = request.getParameterNames(); enumeration.hasMoreElements();) {
-                    String key = enumeration.nextElement();
-                    paramsJO.put(key, request.getParameter(key));
-                }
-            break;
-            default:
-                if ("application/json".equals(request.getContentType())) {
-                    Object[] objects = joinPoint.getArgs();
-                    for (Object object : objects) {
-                        if (object instanceof CustomRequest) {
-                            paramsJO = JSON.parseObject(JSON.toJSONString(object));
+
+        if(null != joinPoint.getArgs() && joinPoint.getArgs().length > 0){
+            Object[] values = joinPoint.getArgs();
+            MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+            if(null != methodSignature){
+                String[] paramNames = methodSignature.getParameterNames();
+                if(values.length == paramNames.length){
+                    for (int i = 0; i < paramNames.length; i++) {
+                        Object object = values[i];
+                        if (!(object instanceof HttpServletRequest) && !(object instanceof HttpServletResponse) && !(object instanceof MultipartFile)){
+                            paramsJO.put(paramNames[i],object);
                         }
                     }
                 }
-                break;
+            }
+
         }
         if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
             logger.info(paramsLog,cls.getSimpleName()
