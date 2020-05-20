@@ -1,13 +1,17 @@
 package com.itactic.core.vo;
 
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Map;
 
 public class CustomRequest {
 
+	@ApiModelProperty(required = true, value = "json参数", name = "params")
 	private Map<String, Object> params;
+	@ApiModelProperty(required = false, value = "数据列表页数", name = "page", example = "1")
 	private Integer page;
+	@ApiModelProperty(required = false, value = "数据列表当前页显示数量", name = "limit", example = "10")
 	private Integer limit;
 
 	public Map<String, Object> getParams() {
