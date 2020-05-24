@@ -128,7 +128,7 @@ public final class LogOutAspect {
                 if(values.length == paramNames.length){
                     for (int i = 0; i < paramNames.length; i++) {
                         Object object = values[i];
-                        if (!(object instanceof HttpServletRequest) && !(object instanceof HttpServletResponse) && !(object instanceof MultipartFile)){
+                        if (!(object instanceof HttpServletRequest) && !(object instanceof HttpServletResponse) && !(object instanceof MultipartFile) && !(object instanceof MultipartFile[])){
                             paramsJO.put(paramNames[i],object);
                         }
                     }
