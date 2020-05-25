@@ -40,6 +40,14 @@ public class AjaxResultV2 {
 		return new AjaxResultV2(BootConstants.AJAX_STATUS.error, msg);
 	}
 
+	public static AjaxResultV2 noLogin(){
+		return new AjaxResultV2(BootConstants.AJAX_STATUS.nologin, "用户未登录");
+	}
+
+	public static AjaxResultV2 noLogin(String msg){
+		return new AjaxResultV2(BootConstants.AJAX_STATUS.nologin, msg);
+	}
+
 	public int getStatus() {
 		return status;
 	}
