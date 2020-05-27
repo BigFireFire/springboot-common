@@ -52,21 +52,18 @@ public final class SearchPO implements ApplicationContextAware {
     private void startCreate() {
         switch (dbType) {
             case MYSQL:
-                StringBuffer sqlSB = new StringBuffer("create table `");
+                StringBuffer sqlSB = new StringBuffer("create table ");
                 String tableName = getTableName(cls);
-                int tableNum = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE table_name =?",new Object[]{tableName},Integer.class);
-                if (Constants.AutoCreate.DELETEANDCREATE.equals(AutoCreateTableConfig.getTableBuildStrategy()) && tableNum > 0) {
-                    /** 删除并创建 */
-                    jdbcTemplate.execute("drop table `" + tableName + "`;");
-                    logger.info("----删除表：[{}]成功----",tableName);
-                } else if (Constants.AutoCreate.NODROP.equals(AutoCreateTableConfig.getTableBuildStrategy())) {
-                    /** 存在不创建 */
-                    if (tableNum > 0) {
-                        logger.info("Table:[{}] Already Exists",tableName);
+                if (checkMYSQLTableExist(tableName)) {
+                    /** 表已经存在了 */
+                    if (Constants.AutoCreate.DELETEANDCREATE.equals(AutoCreateTableConfig.getTableBuildStrategy())) {
+                        SearchPO.dropTable(tableName);
+                    } else if (Constants.AutoCreate.NODROP.equals(AutoCreateTableConfig.getTableBuildStrategy())) {
+                        /** 存在不创建 */
                         return;
                     }
                 }
-                sqlSB.append(tableName + "` ( ");
+                sqlSB.append(tableName + " ( ");
                 String mysqlTableBody = createMySqlTableBody();
                 if (StringUtils.isBlank(mysqlTableBody)) {
                     throw new SqlBuilderException("生成建表语句主体为空！");
@@ -74,9 +71,26 @@ public final class SearchPO implements ApplicationContextAware {
                 sqlSB.append(mysqlTableBody);
                 sqlSB.append(" ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
                 logger.info("AutoCreateTableSql:[{}]", sqlSB.toString());
-                jdbcTemplate.execute(sqlSB.toString());
-            break;
+                try {
+                    jdbcTemplate.execute(sqlSB.toString());
+                } catch (Exception e) {
+                    throw new SqlBuilderException(e.getMessage());
+                }
+                break;
+            default:
+                logger.error("----数据库类型不受支持----");
         }
+    }
+
+    private static boolean checkMYSQLTableExist(String tableName) {
+        if (StringUtils.isBlank(tableName)) {
+            return false;
+        }
+        Integer tableNum = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES T WHERE T.TABLE_NAME = ?",new Object[]{tableName},Integer.class);
+        if (null != tableNum && !tableNum.equals(0)) {
+            return true;
+        }
+        return false;
     }
 
     private String createMySqlTableBody() {
@@ -218,6 +232,41 @@ public final class SearchPO implements ApplicationContextAware {
             throw new SqlBuilderException("没有table注解或缺少动态表名标识");
         }
         new SearchPO().SearchPO(cls, dynamic);
+    }
+
+    /** 删除数据表 */
+    public static void dropTable(String tableName) {
+        if (StringUtils.isNotBlank(tableName)) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("drop table ").append(tableName);
+            try {
+                jdbcTemplate.execute(sb.toString());
+            } catch (Exception e) {
+                logger.error("----dropTable执行出错：【{}】----", e.getMessage());
+            }
+        }
+    }
+
+    public static void dropTableByDynamic(Class<?> cls, String dynamic, DbType dbType) {
+        if (StringUtils.isBlank(dynamic)) {
+            logger.error("----动态名为空----");
+            return;
+        }
+        Table table = cls.getAnnotation(Table.class);
+        if (null == table) {
+            logger.error("----缺少Table注解----");
+            return;
+        }
+        String dyTableName = table.value();
+        if (-1 == dyTableName.indexOf(CommonConstants.DYNAMIC)) {
+            logger.error("----表名缺少动态标识----");
+            return;
+        }
+        String tableName = dyTableName.replace(CommonConstants.DYNAMIC, dynamic);
+        if (DbType.MYSQL == dbType) {
+            dropTable(tableName);
+        }
+
     }
 
     public static void main(String[] args) {
