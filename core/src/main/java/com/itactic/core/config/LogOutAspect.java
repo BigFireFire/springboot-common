@@ -39,16 +39,16 @@ import java.util.Optional;
 @Component
 public final class LogOutAspect {
 
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /** 正常返回日志格式 */
-    private final String resultLog = ">>>>【{}】类的【{}】接口返回参数：【{}】,返回时间：【{}】<<<<";
+    private final String resultLog = "<<<<【{}】类的【{}】接口返回参数：【{}】,返回时间：【{}】<<<<";
     /** 返回类型不受支持日志格式 */
-    private final String resultLogUnSupport = ">>>>【{}】类的【{}】接口返回类型不受支持,返回时间：【{}】<<<<";
+    private final String resultLogUnSupport = "<<<<【{}】类的【{}】接口返回类型不受支持,返回时间：【{}】<<<<";
     /** 请求参数日志格式 */
-    private final String paramsLog = ">>>>【{}】类的【{}】接口调用参数：【{}】,调用时间：【{}】<<<<";
+    private final String paramsLog = ">>>>【{}】类的【{}】接口调用参数：【{}】,调用时间：【{}】>>>>";
 
 
     @Pointcut(value = "within(com..*.controller..*)")
@@ -94,7 +94,6 @@ public final class LogOutAspect {
 
     private void afterReturningAspect(JoinPoint joinPoint, LogOut logOut, Object result) {
         Class cls = joinPoint.getTarget().getClass();
-        logger = LoggerFactory.getLogger(cls);
         Optional<Object> optional = Optional.ofNullable(result);
         if (optional.isPresent() && (result instanceof AjaxResult || "AjaxResult".equals(result.getClass().getSimpleName()) || result instanceof AjaxResultV2)) {
             if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
@@ -118,8 +117,6 @@ public final class LogOutAspect {
     private void beforeAspect(JoinPoint joinPoint, LogOut logOut) {
         JSONObject paramsJO = new JSONObject();
         Class cls = joinPoint.getTarget().getClass();
-        logger = LoggerFactory.getLogger(cls);
-
         if(null != joinPoint.getArgs() && joinPoint.getArgs().length > 0){
             Object[] values = joinPoint.getArgs();
             MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
