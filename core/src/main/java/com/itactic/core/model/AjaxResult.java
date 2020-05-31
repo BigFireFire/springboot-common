@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class AjaxResult<T> {
 
-	@ApiModelProperty("状态(0成功1错误-1未登陆3刷新4重复提交)")
+	@ApiModelProperty("状态(-2无权限，-1未登陆，0成功，1错误，2刷新，3重复提交)")
 	private Integer status;
 	@ApiModelProperty("错误信息")
 	private String msg = "操作成功";
@@ -91,6 +91,12 @@ public class AjaxResult<T> {
 	public static <E> AjaxResult<E> isRepeat() {
 		AjaxResult<E> ajaxResult = new AjaxResult<E>(BootConstants.AJAX_STATUS.repeat);
 		ajaxResult.setMsg("用户重复提交");
+		return ajaxResult;
+	}
+
+	public static <E> AjaxResult<E> noAuthor() {
+		AjaxResult<E> ajaxResult = new AjaxResult<>(BootConstants.AJAX_STATUS.noauthor);
+		ajaxResult.setMsg("无权限");
 		return ajaxResult;
 	}
 
