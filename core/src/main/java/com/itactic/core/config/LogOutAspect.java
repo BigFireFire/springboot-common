@@ -93,56 +93,68 @@ public final class LogOutAspect {
 
 
     private void afterReturningAspect(JoinPoint joinPoint, LogOut logOut, Object result) {
-        Class cls = joinPoint.getTarget().getClass();
-        Optional<Object> optional = Optional.ofNullable(result);
-        if (optional.isPresent() && (result instanceof AjaxResult || "AjaxResult".equals(result.getClass().getSimpleName()) || result instanceof AjaxResultV2)) {
-            if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
-                logger.info(resultLog,cls.getSimpleName()
-                        ,joinPoint.getSignature().getName()
-                        , JSON.toJSON(result),
-                        sdf.format(Calendar.getInstance().getTime()));
-            } else if (LogLevel.DEBUG.name().equals(logOut.logLevel().name())) {
-                logger.debug(resultLog,cls.getSimpleName()
-                        ,joinPoint.getSignature().getName()
-                        , JSON.toJSON(result),
+        try {
+            Class cls = joinPoint.getTarget().getClass();
+            Optional<Object> optional = Optional.ofNullable(result);
+            if (optional.isPresent() && (result instanceof AjaxResult || "AjaxResult".equals(result.getClass().getSimpleName()) || result instanceof AjaxResultV2)) {
+                if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
+                    logger.info(resultLog,cls.getSimpleName()
+                            ,joinPoint.getSignature().getName()
+                            , JSON.toJSON(result),
+                            sdf.format(Calendar.getInstance().getTime()));
+                } else if (LogLevel.DEBUG.name().equals(logOut.logLevel().name())) {
+                    logger.debug(resultLog,cls.getSimpleName()
+                            ,joinPoint.getSignature().getName()
+                            , JSON.toJSON(result),
+                            sdf.format(Calendar.getInstance().getTime()));
+                }
+            } else {
+                logger.info(resultLogUnSupport,cls.getSimpleName()
+                        ,joinPoint.getSignature().getName(),
                         sdf.format(Calendar.getInstance().getTime()));
             }
-        } else {
-            logger.info(resultLogUnSupport,cls.getSimpleName()
-                    ,joinPoint.getSignature().getName(),
-                    sdf.format(Calendar.getInstance().getTime()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("----日志输出异常：【{}】----",e.getMessage());
         }
     }
 
     private void beforeAspect(JoinPoint joinPoint, LogOut logOut) {
-        JSONObject paramsJO = new JSONObject();
-        Class cls = joinPoint.getTarget().getClass();
-        if(null != joinPoint.getArgs() && joinPoint.getArgs().length > 0){
-            Object[] values = joinPoint.getArgs();
-            MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-            if(null != methodSignature){
-                String[] paramNames = methodSignature.getParameterNames();
-                if(values.length == paramNames.length){
-                    for (int i = 0; i < paramNames.length; i++) {
-                        Object object = values[i];
-                        if (!(object instanceof HttpServletRequest) && !(object instanceof HttpServletResponse) && !(object instanceof MultipartFile) && !(object instanceof MultipartFile[])){
-                            paramsJO.put(paramNames[i],object);
+        try {
+            JSONObject paramsJO = new JSONObject();
+            Class cls = joinPoint.getTarget().getClass();
+            if (null != joinPoint.getArgs() && joinPoint.getArgs().length > 0) {
+                Object[] values = joinPoint.getArgs();
+                MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+                if (null != methodSignature) {
+                    String[] paramNames = methodSignature.getParameterNames();
+                    if (null != values && null != paramNames) {
+                        if (values.length == paramNames.length && values.length > 0) {
+                            for (int i = 0; i < paramNames.length; i++) {
+                                Object object = values[i];
+                                if (!(object instanceof HttpServletRequest) && !(object instanceof HttpServletResponse) && !(object instanceof MultipartFile) && !(object instanceof MultipartFile[])) {
+                                    paramsJO.put(paramNames[i], object);
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-        }
-        if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
-            logger.info(paramsLog,cls.getSimpleName()
-                    ,joinPoint.getSignature().getName()
-                    ,paramsJO.toString(),
-                    sdf.format(Calendar.getInstance().getTime()));
-        } else if (LogLevel.DEBUG.name().equals(logOut.logLevel().name())) {
-            logger.debug(paramsLog,cls.getSimpleName()
-                    ,joinPoint.getSignature().getName()
-                    ,paramsJO.toString(),
-                    sdf.format(Calendar.getInstance().getTime()));
+            }
+            if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
+                logger.info(paramsLog, cls.getSimpleName()
+                        , joinPoint.getSignature().getName()
+                        , paramsJO.toString(),
+                        sdf.format(Calendar.getInstance().getTime()));
+            } else if (LogLevel.DEBUG.name().equals(logOut.logLevel().name())) {
+                logger.debug(paramsLog, cls.getSimpleName()
+                        , joinPoint.getSignature().getName()
+                        , paramsJO.toString(),
+                        sdf.format(Calendar.getInstance().getTime()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("----日志输出异常：【{}】----",e.getMessage());
         }
     }
 }
