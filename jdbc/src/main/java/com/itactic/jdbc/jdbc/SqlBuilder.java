@@ -92,8 +92,9 @@ public class SqlBuilder {
 		return dynamic;
 	}
 
-	public void setDynamic(String dynamic) {
+	public SqlBuilder setDynamic(String dynamic) {
 		this.dynamic = dynamic;
+		return this;
 	}
 
 	private SqlBuilder(Class<?> cls) {
