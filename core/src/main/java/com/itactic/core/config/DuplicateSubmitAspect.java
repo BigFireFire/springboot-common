@@ -21,7 +21,7 @@ public class DuplicateSubmitAspect {
 
 	private static final Logger logger = LoggerFactory.getLogger(DuplicateSubmitAspect.class);
 
-	@Pointcut("execution(public * com.itactic.*.controller..*(..))")
+	@Pointcut("within(com..*.controller..*)")
 	public void duplicateSubmit() {
 	}
 
