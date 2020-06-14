@@ -1,5 +1,7 @@
 package com.itactic.core.utils;
 
+import com.alibaba.fastjson.JSONArray;
+
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -106,5 +108,35 @@ public class ArrayToolkitUtils {
 			res.put(field, invokeMethod(obj, field));
 		}
 		return res;
+	}
+
+	public static <T> List<T> pageList (List<T> list, Integer page, Integer limit) {
+		if (null == page || page < 0) {
+			page = 1;
+		}
+		if (null == page || limit < 0) {
+			limit = 10;
+		}
+		Integer startIndex = (page - 1) * limit;
+		Integer endIndex = Math.min(list.size(), startIndex + limit);
+		if (startIndex > endIndex) {
+			startIndex = endIndex;
+		}
+		return list.subList(startIndex, endIndex);
+	}
+
+	public static List<Object> pageJSONArray (JSONArray jsonArray, Integer page, Integer limit) {
+		if (null == page || page < 0) {
+			page = 1;
+		}
+		if (null == limit || limit < 0) {
+			limit = 10;
+		}
+		Integer startIndex = (page - 1) * limit;
+		Integer endIndex = Math.min(jsonArray.size(), startIndex + limit);
+		if (startIndex > endIndex) {
+			startIndex = endIndex;
+		}
+		return jsonArray.subList(startIndex, endIndex);
 	}
 }
