@@ -28,6 +28,7 @@ public class DuplicateSubmitAspect {
 	@Before("duplicateSubmit() && @annotation(token)")
 	public void before(final JoinPoint joinPoint, DuplicateSubmitToken token) {
 		if (token != null) {
+			logger.info("----开始判断是否重复提交----");
 			HttpServletRequest request = WebContextUtils.getRequest();
 			boolean isSaveSession = token.save();
 			if (isSaveSession) {
