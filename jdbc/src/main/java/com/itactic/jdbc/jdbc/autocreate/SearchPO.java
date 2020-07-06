@@ -19,8 +19,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.comparator.Comparators;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -41,7 +45,7 @@ public final class SearchPO implements ApplicationContextAware {
     private void SearchPO(Class<?> cls) {
         this.cls = cls;
         init();
-        startCreate();
+        startCreate(cls.getAnnotation(Table.class));
     }
 
     private void SearchPO(Class<?> cls, String dynamic) {
@@ -49,7 +53,7 @@ public final class SearchPO implements ApplicationContextAware {
         this.SearchPO(cls);
     }
 
-    private void startCreate() {
+    private void startCreate(Table table) {
         switch (dbType) {
             case MYSQL:
                 StringBuffer sqlSB = new StringBuffer("create table ");
@@ -69,6 +73,19 @@ public final class SearchPO implements ApplicationContextAware {
                     throw new SqlBuilderException("生成建表语句主体为空！");
                 }
                 sqlSB.append(mysqlTableBody);
+                if (StringUtils.isNotBlank(table.tableForeignKey())) {
+                    if (!table.tableForeignKey().startsWith(",")) {
+                        sqlSB.append(", ");
+                    }
+                    String foreignKey = table.tableForeignKey().replace(CommonConstants.DYNAMIC, this.dynamic);
+                    if (foreignKey.endsWith(",")) {
+                        foreignKey = foreignKey.substring(0, foreignKey.length() - 1);
+                    }
+                    sqlSB.append(foreignKey);
+                }
+                if (sqlSB.toString().endsWith(",")) {
+                    sqlSB.deleteCharAt(sqlSB.length() - 1);
+                }
                 sqlSB.append(" ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
                 logger.info("AutoCreateTableSql:[{}]", sqlSB.toString());
                 try {
@@ -140,8 +157,8 @@ public final class SearchPO implements ApplicationContextAware {
             }
             sb.append(fieldSql);
         }
-        if (-1 != sb.indexOf(",")) {
-            sb.deleteCharAt(sb.lastIndexOf(","));
+        if (-1 != sb.indexOf(",") && sb.toString().endsWith(",")) {
+            sb.deleteCharAt(sb.length() - 1);
         }
         return sb.toString();
     }
@@ -210,14 +227,17 @@ public final class SearchPO implements ApplicationContextAware {
      * 跳过动态表
      * @see CommonConstants.DYNAMIC
      * */
+    @Deprecated
     public static void CreateTable(String path) {
         Set<Class<?>> classSet = ScanSupport.getClass(path);
-        classSet.forEach(cls -> {
-            Table table = cls.getAnnotation(Table.class);
-            if (null != table && -1 == table.value().indexOf(CommonConstants.DYNAMIC)) {
-                new SearchPO().SearchPO(cls);
-            }
-        });
+        if (null != classSet && classSet.size() > 0) {
+            classSet.forEach(cls -> {
+                Table table = cls.getAnnotation(Table.class);
+                if (null != table && table.value().contains(CommonConstants.DYNAMIC)) {
+                    new SearchPO().SearchPO(cls);
+                }
+            });
+        }
     }
 
     /**
@@ -228,7 +248,7 @@ public final class SearchPO implements ApplicationContextAware {
             throw new SqlBuilderException("实体类为空或动态表名为空!");
         }
         Table table = cls.getAnnotation(Table.class);
-        if (null == table || -1 == table.value().indexOf(CommonConstants.DYNAMIC)) {
+        if (null == table || !table.value().contains(CommonConstants.DYNAMIC)) {
             throw new SqlBuilderException("没有table注解或缺少动态表名标识");
         }
         new SearchPO().SearchPO(cls, dynamic);
