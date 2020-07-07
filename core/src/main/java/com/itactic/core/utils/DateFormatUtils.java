@@ -18,7 +18,7 @@ public class DateFormatUtils {
 
     private static String pattern;
 
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
+    private static DateTimeFormatter dateTimeFormatter;
 
     public static Date format (String timeMillis) {
         if (StringUtils.isBlank(timeMillis) || !StringUtils.isNumeric(timeMillis) || timeMillis.length() != 13) {
@@ -32,9 +32,10 @@ public class DateFormatUtils {
         return dateTimeFormatter.format(localDateTime);
     }
 
-    @Value("date.format.pattern:'yyyy-MM-dd HH:mm:ss'")
-    public void setDateTimeFormatter(DateTimeFormatter dateTimeFormatter) {
-        DateFormatUtils.dateTimeFormatter = dateTimeFormatter;
+    @Value("${date.format.pattern:'yyyy-MM-dd HH:mm:ss'}")
+    public void setPattern(String pattern) {
+        DateFormatUtils.pattern = pattern;
+        dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormatUtils.pattern);
     }
 
 }
