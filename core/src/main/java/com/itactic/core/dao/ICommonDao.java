@@ -45,4 +45,8 @@ public interface ICommonDao {
     public <T> T queryForObjectBySql(Class<T> cls, String sql, List<Object> params);
 
     public <T> T queryForObjectBySql(Class<T> cls, String sql, Map<String, Object> params);
+
+    public Integer countBySql(String sql, List<Object> params);
+
+    public Integer countBySql(String sql, Map<String, Object> params);
 }

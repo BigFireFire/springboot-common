@@ -93,12 +93,18 @@ public class CommonDaoImpl extends BaseDao implements ICommonDao {
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> queryBySql(Class<T> cls, String sql, List<Object> params) {
+        if (null == params) {
+            return getJdbcTemplate().query(sql, BeanPropertyRowMapper.newInstance(cls));
+        }
         return getJdbcTemplate().query(sql, params.toArray(), BeanPropertyRowMapper.newInstance(cls));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> queryBySql(Class<T> cls, String sql, Map<String, Object> params) {
+        if (null == params) {
+            return getNamedTemplate().query(sql, BeanPropertyRowMapper.newInstance(cls));
+        }
         return getNamedTemplate().query(sql, params, BeanPropertyRowMapper.newInstance(cls));
     }
 
@@ -118,5 +124,18 @@ public class CommonDaoImpl extends BaseDao implements ICommonDao {
             return list.get(0);
         }
         return null;
+    }
+
+    @Override
+    public Integer countBySql(String sql, List<Object> params) {
+        if (null == params) {
+            return getJdbcTemplate().queryForObject(sql, Integer.class);
+        }
+        return getJdbcTemplate().queryForObject(sql, params.toArray(), Integer.class);
+    }
+
+    @Override
+    public Integer countBySql(String sql, Map<String, Object> params) {
+        return getNamedTemplate().queryForObject(sql, params, Integer.class);
     }
 }
