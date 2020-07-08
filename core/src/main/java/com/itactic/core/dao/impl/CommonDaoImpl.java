@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 1Zx.
@@ -89,4 +90,33 @@ public class CommonDaoImpl extends BaseDao implements ICommonDao {
         return new PageBean<T>(total, rows);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> List<T> queryBySql(Class<T> cls, String sql, List<Object> params) {
+        return getJdbcTemplate().query(sql, params.toArray(), BeanPropertyRowMapper.newInstance(cls));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> List<T> queryBySql(Class<T> cls, String sql, Map<String, Object> params) {
+        return getNamedTemplate().query(sql, params, BeanPropertyRowMapper.newInstance(cls));
+    }
+
+    @Override
+    public <T> T queryForObjectBySql(Class<T> cls, String sql, List<Object> params) {
+        List<T> list = queryBySql(cls, sql, params);
+        if (null != list && list.size() > 0) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public <T> T queryForObjectBySql(Class<T> cls, String sql, Map<String, Object> params) {
+        List<T> list = queryBySql(cls, sql, params);
+        if (null != list && list.size() > 0) {
+            return list.get(0);
+        }
+        return null;
+    }
 }

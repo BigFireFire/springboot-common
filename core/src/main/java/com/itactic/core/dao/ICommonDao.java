@@ -6,6 +6,7 @@ import com.itactic.core.model.PageBean;
 import com.itactic.jdbc.jdbc.SqlBuilder;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 1Zx.
@@ -34,4 +35,14 @@ public interface ICommonDao {
     public Integer getSequence(String sequence_name);
 
     public <T> PageBean<T> queryByPage(SqlBuilder sqlBuilder);
+
+    /** 通过sql语句查询 */
+
+    public <T> List<T> queryBySql(Class<T> cls, String sql, List<Object> params);
+
+    public <T> List<T> queryBySql(Class<T> cls, String sql, Map<String, Object> params);
+
+    public <T> T queryForObjectBySql(Class<T> cls, String sql, List<Object> params);
+
+    public <T> T queryForObjectBySql(Class<T> cls, String sql, Map<String, Object> params);
 }
