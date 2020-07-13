@@ -14,7 +14,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.SystemPropertyUtils;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -29,7 +29,7 @@ public class ScanSupport implements ResourceLoaderAware {
     private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
 
     public Set<Class<?>> doScan(String scanPath) throws IOException {
-        Set<Class<?>> classes = new HashSet<>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
                 .concat(ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(scanPath))
                         .concat("/**/*.class"));
