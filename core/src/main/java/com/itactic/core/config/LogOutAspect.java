@@ -6,7 +6,7 @@ import com.itactic.core.annotation.LogLevel;
 import com.itactic.core.annotation.LogOut;
 import com.itactic.core.model.AjaxResult;
 import com.itactic.core.model.AjaxResultV2;
-import com.itactic.core.vo.CustomRequest;
+import com.itactic.core.utils.WebContextUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,19 +16,12 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.Optional;
 
 /**
@@ -44,11 +37,11 @@ public final class LogOutAspect {
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /** 正常返回日志格式 */
-    private final String resultLog = "<<<<【{}】类的【{}】接口返回参数：【{}】,返回时间：【{}】<<<<";
+    private final String resultLog = "<<<<Class: [{}], Api: [{}], Result: [{}], Time: [{}]<<<<";
     /** 返回类型不受支持日志格式 */
-    private final String resultLogUnSupport = "<<<<【{}】类的【{}】接口返回类型不受支持,返回时间：【{}】<<<<";
+    private final String resultLogUnSupport = "<<<<[{}]类的[{}]接口返回类型不受支持,返回时间：[{}]<<<<";
     /** 请求参数日志格式 */
-    private final String paramsLog = ">>>>【{}】类的【{}】接口调用参数：【{}】,调用时间：【{}】>>>>";
+    private final String paramsLog = ">>>>Class: [{}], Method: [{}], Api: [{}], Params: [{}], Time: [{}]>>>>";
 
 
     @Pointcut(value = "within(com..*.controller..*)")
@@ -115,7 +108,7 @@ public final class LogOutAspect {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("----日志输出异常：【{}】----",e.getMessage());
+            logger.error("----日志输出异常：[{}]----",e.getMessage());
         }
     }
 
@@ -141,8 +134,10 @@ public final class LogOutAspect {
                 }
 
             }
+            HttpServletRequest request = WebContextUtils.getRequest();
+
             if (LogLevel.INFO.name().equals(logOut.logLevel().name())) {
-                logger.info(paramsLog, cls.getSimpleName()
+                logger.info(paramsLog, cls.getSimpleName(), null != request ? request.getMethod() : "Wrong"
                         , joinPoint.getSignature().getName()
                         , paramsJO.toString(),
                         sdf.format(Calendar.getInstance().getTime()));
@@ -154,7 +149,7 @@ public final class LogOutAspect {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("----日志输出异常：【{}】----",e.getMessage());
+            logger.error("----日志输出异常：[{}]----",e.getMessage());
         }
     }
 }
