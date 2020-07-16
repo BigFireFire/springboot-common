@@ -56,7 +56,7 @@ public final class LogOutAspect {
 
     @Before("LogOutCls() &&  @within(logOut)")
     public void clsBefore(JoinPoint joinPoint, LogOut logOut) {
-        beforeAspect(joinPoint,logOut);
+        beforeLog(joinPoint,logOut);
     }
 
 
@@ -65,7 +65,7 @@ public final class LogOutAspect {
         Class cls = joinPoint.getTarget().getClass();
         LogOut logOutCls = (LogOut) cls.getAnnotation(LogOut.class);
         if (null == logOutCls) {
-            beforeAspect(joinPoint, logOut);
+            beforeLog(joinPoint, logOut);
         }
 
     }
@@ -75,17 +75,17 @@ public final class LogOutAspect {
         Class cls = joinPoint.getTarget().getClass();
         LogOut logOutCls = (LogOut) cls.getAnnotation(LogOut.class);
         if (null == logOutCls) {
-            afterReturningAspect(joinPoint, logOut, result);
+            afterLog(joinPoint, logOut, result);
         }
     }
 
     @AfterReturning(value = "LogOutCls() && @within(logOut)", returning = "result")
     public void clsAfterReturning(JoinPoint joinPoint, LogOut logOut, Object result) {
-        afterReturningAspect(joinPoint, logOut, result);
+        afterLog(joinPoint, logOut, result);
     }
 
 
-    private void afterReturningAspect(JoinPoint joinPoint, LogOut logOut, Object result) {
+    private void afterLog(JoinPoint joinPoint, LogOut logOut, Object result) {
         try {
             Class cls = joinPoint.getTarget().getClass();
             Optional<Object> optional = Optional.ofNullable(result);
@@ -112,7 +112,7 @@ public final class LogOutAspect {
         }
     }
 
-    private void beforeAspect(JoinPoint joinPoint, LogOut logOut) {
+    private void beforeLog(JoinPoint joinPoint, LogOut logOut) {
         try {
             JSONObject paramsJO = new JSONObject();
             Class cls = joinPoint.getTarget().getClass();
