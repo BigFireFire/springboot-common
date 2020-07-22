@@ -138,4 +138,14 @@ public class CommonDaoImpl extends BaseDao implements ICommonDao {
     public Integer countBySql(String sql, Map<String, Object> params) {
         return getNamedTemplate().queryForObject(sql, params, Integer.class);
     }
+
+    @Override
+    public void updateBySql(String sql, Object[] params) {
+        getJdbcTemplate().update(sql, params);
+    }
+
+    @Override
+    public void updateBySql(String sql, Map<String, Object> params) {
+        getNamedTemplate().update(sql, params);
+    }
 }

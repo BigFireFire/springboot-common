@@ -49,4 +49,8 @@ public interface ICommonDao {
     public Integer countBySql(String sql, List<Object> params);
 
     public Integer countBySql(String sql, Map<String, Object> params);
+
+    public void updateBySql (String sql, Object[] params);
+
+    public void updateBySql (String sql, Map<String, Object> params);
 }
