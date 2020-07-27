@@ -113,6 +113,9 @@ public final class LogOutAspect {
     }
 
     private void beforeLog(JoinPoint joinPoint, LogOut logOut) {
+        if (logOut.ignore()) {
+            return;
+        }
         try {
             JSONObject paramsJO = new JSONObject();
             Class cls = joinPoint.getTarget().getClass();

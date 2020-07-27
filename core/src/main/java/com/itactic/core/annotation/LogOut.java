@@ -14,4 +14,5 @@ public @interface LogOut {
 
     public LogLevel logLevel() default LogLevel.INFO;
 
+    public boolean ignore() default false;
 }
