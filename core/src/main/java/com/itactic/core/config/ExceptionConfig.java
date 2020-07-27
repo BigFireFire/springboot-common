@@ -1,6 +1,7 @@
 package com.itactic.core.config;
 
 import com.itactic.core.exception.BootCustomException;
+import com.itactic.core.exception.ImportException;
 import com.itactic.core.model.AjaxResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,9 @@ public class ExceptionConfig {
             return AjaxResult.error("请求参数不合法");
         } else if ( e instanceof MethodArgumentTypeMismatchException) {
             return AjaxResult.error("参数类型不合法");
-        } else {
+        } else if (e instanceof ImportException){
+            return AjaxResult.error("导入失败");
+        }else{
             return AjaxResult.error("系统错误");
         }
     }
