@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
  * @author 楼中煊
  * @date 2019年10月11日 下午4:08:42
  */
-@Component
+@Component("commonSpringBeanFactory")
 public final class SpringBeanFactory implements ApplicationContextAware {
 
     private static ApplicationContext context;
 
-    public static <T> T getBean(Class<T> className) {
+    public static <T> T getBean (Class<T> className) {
         return context.getBean(className);
     }
 
