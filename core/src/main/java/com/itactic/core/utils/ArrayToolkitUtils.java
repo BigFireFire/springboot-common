@@ -111,10 +111,13 @@ public class ArrayToolkitUtils {
 	}
 
 	public static <T> List<T> pageList (List<T> list, Integer page, Integer limit) {
-		if (null == page || page < 0) {
+		if (null == list) {
+			return new ArrayList<>();
+		}
+		if (null == page || page <= 0) {
 			page = 1;
 		}
-		if (null == page || limit < 0) {
+		if (limit < 0) {
 			limit = 10;
 		}
 		Integer startIndex = (page - 1) * limit;
@@ -126,7 +129,10 @@ public class ArrayToolkitUtils {
 	}
 
 	public static List<Object> pageJSONArray (JSONArray jsonArray, Integer page, Integer limit) {
-		if (null == page || page < 0) {
+		if (null == jsonArray) {
+			return new JSONArray();
+		}
+		if (null == page || page <= 0) {
 			page = 1;
 		}
 		if (null == limit || limit < 0) {
