@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.UUID;
 
 /**
@@ -21,6 +22,8 @@ public class DuplicateSubmitAspect {
 
 	private static final Logger logger = LoggerFactory.getLogger(DuplicateSubmitAspect.class);
 
+	private static final String REPEAT = "com.itactic.core.repeat";
+
 	@Pointcut("within(com..*.controller..*)")
 	public void duplicateSubmit() {
 	}
@@ -28,22 +31,22 @@ public class DuplicateSubmitAspect {
 	@Before("duplicateSubmit() && @annotation(token)")
 	public void before(final JoinPoint joinPoint, DuplicateSubmitToken token) {
 		if (token != null) {
-			logger.info("----开始判断是否重复提交----");
 			HttpServletRequest request = WebContextUtils.getRequest();
+			HttpSession session = request.getSession();
 			boolean isSaveSession = token.save();
 			if (isSaveSession) {
 				String TOKEN_KEY = String.format("%s.%s", joinPoint.getSignature().getDeclaringTypeName(),
 						joinPoint.getSignature().getName());
-				Object t = request.getSession().getAttribute(TOKEN_KEY);
+				Object t = session.getAttribute(TOKEN_KEY);
 				if (null == t) {
 					String uuid = UUID.randomUUID().toString();
-					request.getSession().setAttribute(TOKEN_KEY, uuid);
+					session.setAttribute(TOKEN_KEY, uuid);
 				} else {
 					logger.error("方法[{}]收到重复的请求", TOKEN_KEY);
+					session.setAttribute(REPEAT, true);
 					throw new BootCustomException("请不要重复请求！");
 				}
 			}
-
 		}
 	}
 
@@ -55,9 +58,11 @@ public class DuplicateSubmitAspect {
 			if (isSaveSession) {
 				String TOKEN_KEY = String.format("%s.%s", joinPoint.getSignature().getDeclaringTypeName(),
 						joinPoint.getSignature().getName());
-				Object t = request.getSession().getAttribute(TOKEN_KEY);
+				HttpSession session = request.getSession();
+				Object t = session.getAttribute(TOKEN_KEY);
 				if (null != t) {// 方法执行完毕移除请求重复标记
-					request.getSession().removeAttribute(TOKEN_KEY);
+					session.removeAttribute(TOKEN_KEY);
+					session.removeAttribute(REPEAT);
 				}
 			}
 		}
@@ -71,8 +76,10 @@ public class DuplicateSubmitAspect {
 			if (isSaveSession) {
 				String TOKEN_KEY = String.format("%s.%s", joinPoint.getSignature().getDeclaringTypeName(),
 						joinPoint.getSignature().getName());
-				Object t = request.getSession().getAttribute(TOKEN_KEY);
-				if (null != t) {// 方法执行完毕移除请求重复标记
+				HttpSession session = request.getSession();
+				Object t = session.getAttribute(TOKEN_KEY);
+				Boolean repeat = (Boolean) request.getSession().getAttribute(REPEAT);
+				if (null != t && (null == repeat || !repeat)) {// 方法执行完毕移除请求重复标记
 					request.getSession().removeAttribute(TOKEN_KEY);
 				}
 			}
