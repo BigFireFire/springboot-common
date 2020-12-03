@@ -17,7 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class ExceptionConfig {
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionConfig.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ExceptionConfig.class);
 
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
