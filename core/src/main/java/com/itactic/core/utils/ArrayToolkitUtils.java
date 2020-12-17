@@ -117,7 +117,7 @@ public class ArrayToolkitUtils {
 		if (null == page || page <= 0) {
 			page = 1;
 		}
-		if (limit < 0) {
+		if (null == limit || limit < 0) {
 			limit = 10;
 		}
 		Integer startIndex = (page - 1) * limit;
