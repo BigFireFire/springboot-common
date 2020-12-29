@@ -1,6 +1,7 @@
 package com.itactic.core.utils;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +81,7 @@ public class EnAndDe {
         }
     }
 
+    @Deprecated
 	public static String RandomString(int length) {  
 	    String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
 	    Random random = new Random();  
@@ -90,6 +92,21 @@ public class EnAndDe {
 	    }  
 	    return buf.toString();  
 	}
+
+	public static String RandomString(int length, String randString){
+		String str = "abcdefghijklmnopqrstuvwxyz0123456789";
+		if (StringUtils.isNotBlank(randString)) {
+			str = randString;
+		}
+		Random random = new Random();
+		StringBuffer buf = new StringBuffer();
+		for (int i = 0; i < length; i++) {
+			int num = random.nextInt(str.length());
+			buf.append(str.charAt(num));
+		}
+		return buf.toString();
+	}
+
 
 	public static String RandomNumString(int length) {
 		String str = "0123456789";
