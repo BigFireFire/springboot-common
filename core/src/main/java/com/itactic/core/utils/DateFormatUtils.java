@@ -2,6 +2,7 @@ package com.itactic.core.utils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.Date;
  * @author 1Zx.
  * @date 2020/7/7 11:00
  */
+@Scope("singleton")
 @Component
 public class DateFormatUtils {
 
@@ -24,7 +26,7 @@ public class DateFormatUtils {
         if (StringUtils.isBlank(timeMillis) || !StringUtils.isNumeric(timeMillis) || timeMillis.length() != 13) {
             return null;
         }
-        return new Date(Long.valueOf(timeMillis));
+        return new Date(Long.parseLong(timeMillis));
     }
 
     public static String format (Date date) {
