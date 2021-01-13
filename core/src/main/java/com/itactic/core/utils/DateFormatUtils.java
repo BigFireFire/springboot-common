@@ -22,11 +22,18 @@ public class DateFormatUtils {
 
     private static DateTimeFormatter dateTimeFormatter;
 
-    public static Date format (String timeMillis) {
-        if (StringUtils.isBlank(timeMillis) || !StringUtils.isNumeric(timeMillis) || timeMillis.length() != 13) {
+    public static Date format (Long timeMillis) {
+        if (null == timeMillis) {
             return null;
         }
-        return new Date(Long.parseLong(timeMillis));
+        return new Date(timeMillis);
+    }
+
+    public static Date format (String timeMillis) {
+        if (StringUtils.isBlank(timeMillis) || !StringUtils.isNumeric(timeMillis)) {
+            return null;
+        }
+        return format(Long.valueOf(timeMillis));
     }
 
     public static String format (Date date) {
