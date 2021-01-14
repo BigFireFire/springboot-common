@@ -23,7 +23,18 @@
         <com.alibaba.fastjson.version>1.2.62</com.alibaba.fastjson.version>
         <!--redis-->
         <redis-version>2.1.5.RELEASE</redis-version>
+        <com.aliyun.oss.version>2.8.3</com.aliyun.oss.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.aliyun.oss</groupId>
+                <artifactId>aliyun-sdk-oss</artifactId>
+                <version>${com.aliyun.oss.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
